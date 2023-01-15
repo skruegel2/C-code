@@ -1,0 +1,69 @@
+# depslib dependency file v1.0
+1673787305 source:c:\git-projects\ee637\c-code\src\allocate.c
+	<stdio.h>
+	<stdlib.h>
+	<stdarg.h>
+	"allocate.h"
+
+1673787305 c:\git-projects\ee637\c-code\src\allocate.h
+	<stdlib.h>
+
+1673787304 source:c:\git-projects\ee637\c-code\src\imagereadwriteexample.c
+	<math.h>
+	"tiff.h"
+	"allocate.h"
+	"randlib.h"
+	"typeutil.h"
+
+1673787305 c:\git-projects\ee637\c-code\src\tiff.h
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+	<stdarg.h>
+	<math.h>
+	"typeutil.h"
+
+1673787305 c:\git-projects\ee637\c-code\src\typeutil.h
+	<inttypes.h>
+	<stdint.h>
+
+1673787305 c:\git-projects\ee637\c-code\src\randlib.h
+	<stdlib.h>
+	<stdio.h>
+	<math.h>
+	<string.h>
+	"typeutil.h"
+
+1673787305 source:c:\git-projects\ee637\c-code\src\qggmrf.c
+	"qGGMRF.h"
+
+1673787305 c:\git-projects\ee637\c-code\src\qggmrf.h
+	<stdlib.h>
+	<stdio.h>
+	<math.h>
+	<float.h>
+	"typeutil.h"
+
+1673787305 source:c:\git-projects\ee637\c-code\src\randlib.c
+	"randlib.h"
+
+1673787305 source:c:\git-projects\ee637\c-code\src\solve.c
+	"solve.h"
+	<stdlib.h>
+	<stdio.h>
+	<math.h>
+	<string.h>
+	"typeutil.h"
+
+1673787305 c:\git-projects\ee637\c-code\src\solve.h
+
+1673787305 source:c:\git-projects\ee637\c-code\src\surrogatefunctionexample.c
+	<math.h>
+	"allocate.h"
+	"randlib.h"
+	"typeutil.h"
+	"qGGMRF.h"
+
+1673787305 source:c:\git-projects\ee637\c-code\src\tiff.c
+	"tiff.h"
+

@@ -3,3 +3,4 @@
 bin/*
 demo/output/*
 .idea
+#.exe
