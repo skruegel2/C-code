@@ -11,6 +11,7 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option parameters="img03.tif" />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>
@@ -31,7 +32,32 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="../src/FIRLowPassFilter.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/allocate.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/allocate.h" />
+		<Unit filename="../src/qGGMRF.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/qGGMRF.h" />
+		<Unit filename="../src/randlib.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/randlib.h" />
+		<Unit filename="../src/solve.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/solve.h" />
+		<Unit filename="../src/tiff.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/tiff.h" />
+		<Unit filename="../src/typeutil.h" />
 		<Extensions>
+			<editor_config active="1" use_tabs="0" tab_indents="0" tab_width="2" indent="2" eol_mode="0" />
 			<lib_finder disable_auto="1" />
 		</Extensions>
 	</Project>

@@ -9,6 +9,15 @@
 #define IMAGE_OFFSET 4  // Used to center convolved image
 void error(char *name);
 
+double ConvolveHoriz(int cur_vert_pos, int cur_horiz_pos, int width,
+                      double** img_array, double* filt_array);
+double ConvolveLeft(int cur_vert_pos, int cur_horiz_pos, int width,
+                      double** img_array, double* filt_array);
+double ConvolveCenter(int cur_vert_pos, int cur_horiz_pos, int width,
+                      double** img_array, double* filt_array);
+double ConvolveRight(int cur_vert_pos, int cur_horiz_pos, int width,
+                      double** img_array, double* filt_array);
+
 int main (int argc, char **argv)
 {
 
@@ -17,9 +26,11 @@ int main (int argc, char **argv)
   double **img_red_array,**img_green_array, **img_blue_array;
   double **img_red_filt, **img_green_filt, **img_blue_filt;
   int32_t i,j,k;
+  int32_t pixel;
 //  double filt_array[9] = {1.0/81.0,1.0/81.0,1.0/81.0,1.0/81.0,1.0/81.0,
 //                        1.0/81.0,1.0/81.0,1.0/81.0};
-  double filt_array[9] = {1,1,1,1,1,1,1,1,1};
+  double filt_array[9] = {0.1111,0.1111,0.1111,0.1111,0.1111,0.1111,0.1111,0.1111,0.1111};
+//  double filt_array[9] = {1,1,1,1,1,1,1,1,1};
 
   if ( argc != 2 ) error( argv[0] );
 
@@ -46,12 +57,9 @@ int main (int argc, char **argv)
 
   /* Allocate image of double precision floats */
   /* Increase size of array in both dimensions for easy convolution. */
-  /* This leads to an eight element ring of zero around image data */
-//  img_red_array = (double **)get_img(input_img.width,
-//                                     input_img.height,
-//                                     sizeof(double));
-  img_red_array = (double **)get_img(input_img.width + (FILTER_LENGTH - 1) * 2,
-                                     input_img.height + (FILTER_LENGTH - 1) * 2,
+
+  img_red_array = (double **)get_img(input_img.width,
+                                     input_img.height,
                                      sizeof(double));
 //  img_green_array = (double **)get_img(input_img.width + (FILTER_LENGTH - 1) * 2,
 //                                     input_img.height + (FILTER_LENGTH - 1) * 2,
@@ -59,8 +67,8 @@ int main (int argc, char **argv)
 //  img_blue_array = (double **)get_img(input_img.width + (FILTER_LENGTH - 1) * 2,
 //                                     input_img.height + (FILTER_LENGTH - 1) * 2,
 //                                     sizeof(double));
-  img_red_filt = (double **)get_img(input_img.width + (FILTER_LENGTH - 1) * 2,
-                                     input_img.height + (FILTER_LENGTH - 1) * 2,
+  img_red_filt = (double **)get_img(input_img.width + (FILTER_LENGTH - 1),
+                                     input_img.height + (FILTER_LENGTH - 1),
                                      sizeof(double));
 //  img_green_filt = (double **)get_img(input_img.width + (FILTER_LENGTH - 1) * 2,
 //                                     input_img.height + FILTER_LENGTH - 1,
@@ -69,11 +77,10 @@ int main (int argc, char **argv)
 //                                     input_img.height + (FILTER_LENGTH - 1) * 2,
 //                                     sizeof(double));
 
-  /* Zero out all arrays because some elements will not be copied */
-  for ( i = 0; i < input_img.height + (FILTER_LENGTH - 1) * 2; i++ )
+  /* Zero out filt arrays because some elements will not be copied */
+  for ( i = 0; i < input_img.height + (FILTER_LENGTH - 1); i++ )
   {
-      for ( j = 0; j < input_img.width + (FILTER_LENGTH - 1) * 2; j++ ) {
-        img_red_array[i][j] = 0;
+      for ( j = 0; j < input_img.width + (FILTER_LENGTH - 1); j++ ) {
     //    img_green_array[i][j] = 0;
     //    img_blue_array[i][j] = 0;
         img_red_filt[i][j] = 0;
@@ -85,26 +92,22 @@ int main (int argc, char **argv)
 
   /* copy all components to respective double array */
   for ( i = 0; i < input_img.height; i++ )
-  for ( j = 0; j < input_img.width; j++ ) {
-//    img_red_array[i][j] = input_img.color[0][i][j];
-    img_red_array[i+(FILTER_LENGTH - 1)][j+(FILTER_LENGTH - 1)] = input_img.color[0][i][j];
-//    img_green_array[i+(FILTER_LENGTH - 1)][j+(FILTER_LENGTH - 1)] = input_img.color[1][i][j];
-//    img_blue_array[i+(FILTER_LENGTH - 1)][j+(FILTER_LENGTH - 1)] = input_img.color[2][i][j];
+  {
+    for ( j = 0; j < input_img.width; j++ )
+    {
+  //    img_red_array[i][j] = input_img.color[0][i][j];
+      img_red_array[i][j] = input_img.color[0][i][j];
+  //    img_green_array[i+(FILTER_LENGTH - 1)][j+(FILTER_LENGTH - 1)] = input_img.color[1][i][j];
+  //    img_blue_array[i+(FILTER_LENGTH - 1)][j+(FILTER_LENGTH - 1)] = input_img.color[2][i][j];
+    }
   }
 
   /* Filter image along horizontal direction */
-  for ( i = (FILTER_LENGTH - 1); i < input_img.height+(FILTER_LENGTH - 1); i++ )
+  for ( i = 0; i < input_img.height+(FILTER_LENGTH - 1); i++ )
   {
     for ( j = 0; j < input_img.width+(FILTER_LENGTH - 1); j++ )
     {
-        int debug = 0;
-        for(k = 0; k < FILTER_LENGTH; k++)
-        {
-            debug += (img_red_array[i][j+k])*filt_array[k];
-            img_red_filt[i][j] += (img_red_array[i][j+k])*filt_array[k];
-//            img_green_filt[i][j] = img_green_array[i][j+k]*filt_array[k];
-//            img_blue_filt[i][j] = img_blue_array[i][j+k]*filt_array[k];
-        }
+        img_red_filt[i][j] = ConvolveHoriz(i, j, input_img.width, img_red_array, filt_array);
     }
   }
 
@@ -121,8 +124,8 @@ int main (int argc, char **argv)
 
   /* set up structure for output color image */
   /* Note that the type is 'c' rather than 'g' */
-  get_TIFF ( &color_img, input_img.height+(FILTER_LENGTH - 1) * 2,
-            input_img.width+(FILTER_LENGTH - 1) * 2, 'c' );
+  get_TIFF ( &color_img, input_img.height+(FILTER_LENGTH - 1),
+            input_img.width+(FILTER_LENGTH - 1), 'c' );
 //  get_TIFF ( &color_img, input_img.height,
 //            input_img.width, 'c' );
 
@@ -140,11 +143,23 @@ int main (int argc, char **argv)
 //  }
 
   /* Illustration: constructing a sample color image -- interchanging the red and green components from the input color image */
-  for ( i = 0; i < input_img.height+(FILTER_LENGTH - 1) * 2; i++ )
+  for ( i = 0; i < input_img.height+(FILTER_LENGTH - 1); i++ )
   {
-      for ( j = 0; j < input_img.width+(FILTER_LENGTH - 1) * 2; j++ ) {
-
-          color_img.color[0][i][j] = img_red_filt[i][j];
+      for ( j = 0; j < input_img.width+(FILTER_LENGTH - 1); j++ )
+      {
+          pixel = (int32_t) img_red_filt[i][j];
+          if (pixel > 255)
+          {
+              color_img.color[0][i][j] = 255;
+          }
+          else if (pixel < 0)
+          {
+              color_img.color[0][i][j] = 0;
+          }
+          else
+          {
+              color_img.color[0][i][j] = img_red_filt[i][j];
+          }
 //          color_img.color[1][i][j] = img_green_array[i][j];
 //          color_img.color[2][i][j] = img_blue_array[i][j];
       }
@@ -208,5 +223,52 @@ void error(char *name)
     printf("It also generates an 8-bit color image,\n");
     printf("that swaps red and green components from the input image");
     exit(1);
+}
+// Three cases: left boundary, center, right boundary
+double ConvolveHoriz(int cur_vert_pos, int cur_horiz_pos, int width,
+                     double** img_array, double* filt_array)
+{
+  double ret_val;
+  if (cur_horiz_pos < FILTER_LENGTH)
+  {
+    ret_val = ConvolveLeft(cur_vert_pos, cur_horiz_pos, width, img_array, filt_array);
+  }
+  else if (cur_horiz_pos > (width - 1))     // Last center position at width - 1
+  {
+    ret_val = ConvolveRight(cur_vert_pos, cur_horiz_pos, width, img_array, filt_array);
+  }
+  else
+  {
+    ret_val = ConvolveCenter(cur_vert_pos, cur_horiz_pos, width, img_array, filt_array);
+
+  }
+  return ret_val;
+}
+
+double ConvolveLeft(int cur_vert_pos, int cur_horiz_pos, int width,
+                     double** img_array, double* filt_array)
+{
+  double ret_val = 0;
+  int k = 0;
+  do
+  {
+    ret_val += img_array[cur_vert_pos][cur_horiz_pos+k] * filt_array[k];
+    k++;
+  } while (k < cur_horiz_pos+1);
+  return ret_val;
+}
+
+double ConvolveCenter(int cur_vert_pos, int cur_horiz_pos, int width,
+                     double** img_array, double* filt_array)
+{
+  double ret_val;
+  return ret_val;
+}
+
+double ConvolveRight(int cur_vert_pos, int cur_horiz_pos, int width,
+                     double** img_array, double* filt_array)
+{
+  double ret_val;
+  return ret_val;
 }
 

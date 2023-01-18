@@ -7,3 +7,5 @@ demo/output/*
 *.exe
 *.depend
 *.depend
+HW1/HW1.layout
+HW1/HW1.depend
