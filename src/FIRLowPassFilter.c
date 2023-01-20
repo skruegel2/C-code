@@ -5,7 +5,7 @@
 #include "randlib.h"
 #include "typeutil.h"
 
-#define FILTER_LENGTH 9
+#define FILTER_LENGTH 5
 
 void error(char *name);
 
@@ -151,9 +151,7 @@ void ProcessRed(struct TIFF_img input_img, struct TIFF_img color_img)
   double **img_red_filt;
   int i, j;
   int32_t pixel;
-////  double filt_array[9] = {1.0/81.0,1.0/81.0,1.0/81.0,1.0/81.0,1.0/81.0,
-////                        1.0/81.0,1.0/81.0,1.0/81.0};
-  double filt_array[9] = {0.1111,0.1111,0.1111,0.1111,0.1111,0.1111,0.1111,0.1111,0.1111};
+  double filt_array[5] = {0.2,0.2,0.2,0.2,0.2};
 
   img_red_array = (double **)get_img(input_img.width,
                                      input_img.height,
@@ -205,9 +203,7 @@ void ProcessGreen(struct TIFF_img input_img, struct TIFF_img color_img)
   double **img_green_filt;
   int i, j;
   int32_t pixel;
-////  double filt_array[9] = {1.0/81.0,1.0/81.0,1.0/81.0,1.0/81.0,1.0/81.0,
-////                        1.0/81.0,1.0/81.0,1.0/81.0};
-  double filt_array[9] = {0.1111,0.1111,0.1111,0.1111,0.1111,0.1111,0.1111,0.1111,0.1111};
+  double filt_array[5] = {0.2,0.2,0.2,0.2,0.2};
 
   img_green_array = (double **)get_img(input_img.width,
                                      input_img.height,
@@ -258,9 +254,7 @@ void ProcessBlue(struct TIFF_img input_img, struct TIFF_img color_img)
   double **img_blue_filt;
   int i, j;
   int32_t pixel;
-////  double filt_array[9] = {1.0/81.0,1.0/81.0,1.0/81.0,1.0/81.0,1.0/81.0,
-////                        1.0/81.0,1.0/81.0,1.0/81.0};
-  double filt_array[9] = {0.1111,0.1111,0.1111,0.1111,0.1111,0.1111,0.1111,0.1111,0.1111};
+  double filt_array[5] = {0.2,0.2,0.2,0.2,0.2};
 
   img_blue_array = (double **)get_img(input_img.width,
                                      input_img.height,
