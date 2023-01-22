@@ -6,6 +6,7 @@
 #include "typeutil.h"
 
 #define FILTER_LENGTH 5
+#define HALF_FILT 2
 
 void error(char *name);
 
@@ -29,53 +30,127 @@ void ProcessGreen(struct TIFF_img input_img, struct TIFF_img color_img);
 
 void ProcessBlue(struct TIFF_img input_img, struct TIFF_img color_img);
 
+// Multiply pixel by one filter element, considering boundaries.
+double MultiplyOneFilterEl(int source_height, int source_width,
+                         int src_cur_row, int src_cur_col, int filt_cur_row,
+                         int filt_cur_col, double** source_img, double** filt);
+
+// Init filter
+void InitFilter(double** filt)
+{
+  for(int cur_row = 0; cur_row < FILTER_LENGTH; cur_row++)
+  {
+    for(int cur_col = 0; cur_col < FILTER_LENGTH; cur_col++)
+    {
+      filt[cur_row][cur_col] = 1;
+    }
+  }
+}
+
 int main (int argc, char **argv)
 {
   FILE *fp_input;
   FILE *fp_color;
   struct TIFF_img input_img;
   struct TIFF_img color_img;
-  if ( argc != 2 ) error( argv[0] );
+  double** test_src_img;
+  double** filt;
 
-  /* open image file */
-  if ( ( fp_input = fopen ( argv[1], "rb" ) ) == NULL ) {
-    fprintf ( stderr, "cannot open file %s\n", argv[1] );
-    exit ( 1 );
+  test_src_img = (double **)get_img(2,
+                                    2,
+                                     sizeof(double));
+  filt = (double **)get_img(FILTER_LENGTH,
+                            FILTER_LENGTH,
+                            sizeof(double));
+  InitFilter(filt);
+  double test_val;
+  test_src_img[0][0] = 1;
+  test_src_img[0][1] = 1;
+  test_src_img[1][0] = 1;
+  test_src_img[1][1] = 1;
+
+  for(int filt_row = -2; filt_row <=2; filt_row++)
+  {
+    for (int filt_col = -2; filt_col <=2; filt_col++)
+    {
+      test_val = MultiplyOneFilterEl(2,2,0,0, filt_row, filt_col, test_src_img, filt);
+    }
   }
 
-  /* read image */
-  if ( read_TIFF ( fp_input, &input_img ) ) {
-    fprintf ( stderr, "error reading file %s\n", argv[1] );
-    exit ( 1 );
-  }
-
-  /* close image file */
-  fclose ( fp_input );
-  get_TIFF ( &color_img, input_img.height+(FILTER_LENGTH - 1),
-            input_img.width+(FILTER_LENGTH - 1), 'c' );
-
-  ProcessRed(input_img, color_img);
-  ProcessGreen(input_img, color_img);
-  ProcessBlue(input_img, color_img);
-
-  if ( ( fp_color = fopen ( "Prob3Filt.tif", "wb" ) ) == NULL ) {
-    fprintf ( stderr, "cannot open file horiz.tif\n");
-    exit ( 1 );
-  }
-
-  // Write color image
-  if ( write_TIFF ( fp_color, &color_img ) ) {
-    fprintf ( stderr, "error writing TIFF file\n");
-    exit ( 1 );
-  }
-
-  // Close color image file
-  fclose ( fp_color );
-
-  free_TIFF ( &(input_img) );
-  free_TIFF ( &(color_img) );
+//  if ( argc != 2 ) error( argv[0] );
+//
+//  /* open image file */
+//  if ( ( fp_input = fopen ( argv[1], "rb" ) ) == NULL ) {
+//    fprintf ( stderr, "cannot open file %s\n", argv[1] );
+//    exit ( 1 );
+//  }
+//
+//  /* read image */
+//  if ( read_TIFF ( fp_input, &input_img ) ) {
+//    fprintf ( stderr, "error reading file %s\n", argv[1] );
+//    exit ( 1 );
+//  }
+//
+//  /* close image file */
+//  fclose ( fp_input );
+//  get_TIFF ( &color_img, input_img.height+(FILTER_LENGTH - 1),
+//            input_img.width+(FILTER_LENGTH - 1), 'c' );
+//
+//  ProcessRed(input_img, color_img);
+//  ProcessGreen(input_img, color_img);
+//  ProcessBlue(input_img, color_img);
+//
+//  if ( ( fp_color = fopen ( "Prob3Filt.tif", "wb" ) ) == NULL ) {
+//    fprintf ( stderr, "cannot open file horiz.tif\n");
+//    exit ( 1 );
+//  }
+//
+//  // Write color image
+//  if ( write_TIFF ( fp_color, &color_img ) ) {
+//    fprintf ( stderr, "error writing TIFF file\n");
+//    exit ( 1 );
+//  }
+//
+//  // Close color image file
+//  fclose ( fp_color );
+//
+//  free_TIFF ( &(input_img) );
+//  free_TIFF ( &(color_img) );
 
   return(0);
+}
+
+// Multiply pixel by one filter element, considering boundaries.
+double MultiplyOneFilterEl(int source_height, int source_width,
+                         int src_cur_row, int src_cur_col, int filt_cur_row,
+                         int filt_cur_col, double** source_img, double** filt)
+{
+  double ret_val;
+  // Check for out of bounds to the left
+  if (src_cur_col + filt_cur_col < 0)
+  {
+    ret_val = 0;
+  }
+  // Check for out of bounds to the right
+  else if (src_cur_col + filt_cur_col > (source_width - 1))
+  {
+    ret_val = 0;
+  }
+  // Check for out of bounds on top
+  else if (src_cur_row + filt_cur_row < 0)
+  {
+    ret_val = 0;
+  }
+  // Check for out of bounds at bottom
+  else if (src_cur_row + filt_cur_row > (source_height - 1))
+  {
+    ret_val = 0;
+  }
+  else
+  {
+    ret_val = source_img[src_cur_row][src_cur_col]*filt[filt_cur_row+HALF_FILT][filt_cur_col+HALF_FILT];
+  }
+  return ret_val;
 }
 
 void error(char *name)
