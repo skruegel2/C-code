@@ -30,6 +30,11 @@ void ProcessGreen(struct TIFF_img input_img, struct TIFF_img color_img);
 
 void ProcessBlue(struct TIFF_img input_img, struct TIFF_img color_img);
 
+// Multiply one pixel element by filter
+double MultiplyOnePixelEl(int source_height, int source_width,
+                         int src_cur_row, int src_cur_col,
+                         double** source_img, double** filt);
+
 // Multiply pixel by one filter element, considering boundaries.
 double MultiplyOneFilterEl(int source_height, int source_width,
                          int src_cur_row, int src_cur_col, int filt_cur_row,
@@ -69,13 +74,10 @@ int main (int argc, char **argv)
   test_src_img[1][0] = 1;
   test_src_img[1][1] = 1;
 
-  for(int filt_row = -2; filt_row <=2; filt_row++)
-  {
-    for (int filt_col = -2; filt_col <=2; filt_col++)
-    {
-      test_val = MultiplyOneFilterEl(2,2,0,0, filt_row, filt_col, test_src_img, filt);
-    }
-  }
+  test_val = MultiplyOnePixelEl(2,2,0,0,test_src_img,filt);
+  test_val = MultiplyOnePixelEl(2,2,0,1,test_src_img,filt);
+  test_val = MultiplyOnePixelEl(2,2,1,0,test_src_img,filt);
+  test_val = MultiplyOnePixelEl(2,2,1,1,test_src_img,filt);
 
 //  if ( argc != 2 ) error( argv[0] );
 //
@@ -150,6 +152,24 @@ double MultiplyOneFilterEl(int source_height, int source_width,
   {
     ret_val = source_img[src_cur_row][src_cur_col]*filt[filt_cur_row+HALF_FILT][filt_cur_col+HALF_FILT];
   }
+  return ret_val;
+}
+
+// Multiply one pixel element by filter
+double MultiplyOnePixelEl(int source_height, int source_width,
+                         int src_cur_row, int src_cur_col,
+                         double** source_img, double** filt)
+{
+  double ret_val = 0;   // Init before accumulating
+  for(int filt_row = -HALF_FILT; filt_row <= HALF_FILT; filt_row++)
+  {
+    for (int filt_col = -HALF_FILT; filt_col <= HALF_FILT; filt_col++)
+    {
+      ret_val += MultiplyOneFilterEl(source_height,source_width,src_cur_row, src_cur_col,
+                                    filt_row, filt_col, source_img, filt);
+    }
+  }
+
   return ret_val;
 }
 
