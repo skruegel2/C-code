@@ -56,24 +56,30 @@ int main (int argc, char **argv)
   struct TIFF_img color_img;
   double** test_src_img;
   double** filt;
-
-  test_src_img = (double **)get_img(2,
-                                    2,
-                                     sizeof(double));
   filt = (double **)get_img(FILTER_LENGTH,
                             FILTER_LENGTH,
                             sizeof(double));
   InitFilter(filt);
+
+//  test_src_img = (double **)get_img(20,
+//                                    20,
+//                                     sizeof(double));
 //  double test_val;
-//  test_src_img[0][0] = 1;
-//  test_src_img[0][1] = 1;
-//  test_src_img[1][0] = 1;
-//  test_src_img[1][1] = 1;
+//  for(int cur_row = 0; cur_row < 20; cur_row++)
+//  {
+//    for(int cur_col = 0; cur_col < 20; cur_col++)
+//    {
+//      test_src_img[cur_row][cur_col] = 1;
+//    }
+//  }
 //
-//  test_val = MultiplyOnePixelEl(2,2,0,0,test_src_img,filt);
-//  test_val = MultiplyOnePixelEl(2,2,0,1,test_src_img,filt);
-//  test_val = MultiplyOnePixelEl(2,2,1,0,test_src_img,filt);
-//  test_val = MultiplyOnePixelEl(2,2,1,1,test_src_img,filt);
+//  for(int cur_row = 0; cur_row < 20; cur_row++)
+//  {
+//    for(int cur_col = 0; cur_col < 20; cur_col++)
+//    {
+//      test_val = MultiplyOnePixelEl(20,20,cur_row,cur_col,test_src_img,filt);
+//    }
+//  }
 
   if ( argc != 2 ) error( argv[0] );
 
@@ -183,60 +189,6 @@ void error(char *name)
     exit(1);
 }
 
-//// Step through all rows and convolve
-//void ConvolveHoriz(int width, int height, int filt_len,
-//                  double** source_img, double* filt_array, double** dest_img)
-//{
-//  for(int current_row = 0; current_row < height; current_row++)
-//  {
-//    ConvolveRow(width, filt_len, source_img[current_row], &filt_array[0], dest_img[current_row]);
-//  }
-//}
-//
-//// Step through all cols and convolve
-//void ConvolveVert(int width, int height, int filt_len,
-//                  double** source_img, double* filt_array, double** dest_img)
-//{
-//  for(int current_col = 0; current_col < width; current_col++)
-//  {
-//    ConvolveCol(height, filt_len, source_img[current_col], &filt_array[0], dest_img[current_col]);
-//  }
-//}
-//
-//void ConvolveRow(int source_len, int filt_len,
-//                 double* source_row, double* filt_array, double* dest_row)
-//{
-//  // Zero out destination
-//  for(int cur_el = 0; cur_el < source_len + filt_len; cur_el++)
-//  {
-//    dest_row[cur_el] = 0;
-//  }
-//  for(int i = 0; i < source_len; i++)
-//  {
-//    for(int j = 0; j < filt_len; j++)
-//    {
-//      dest_row[i+j] += source_row[i]*filt_array[j];
-//    }
-//  }
-//}
-//
-//void ConvolveCol(int source_len, int filt_len,
-//                 double* source_col, double* filt_array, double* dest_col)
-//{
-//  // Zero out destination
-//  for(int cur_el = 0; cur_el < source_len + filt_len; cur_el++)
-//  {
-//    dest_col[cur_el] = 0;
-//  }
-//
-//  for(int i = 0; i < source_len; i++)
-//  {
-//    for(int j = 0; j < filt_len; j++)
-//    {
-//      dest_col[i+j] += source_col[i]*filt_array[j];
-//    }
-//  }
-//}
 
 void ProcessSingleColor(int color, struct TIFF_img input_img, struct TIFF_img color_img, double** filt)
 {
@@ -271,8 +223,7 @@ void ProcessSingleColor(int color, struct TIFF_img input_img, struct TIFF_img co
                                                       input_img.width,
                                                       cur_row,cur_col,
                                                       img_orig, filt);
-      img_filt[cur_row][cur_col] = MultiplyOnePixelEl(input_img.height,
-                                                      input_img.width,
+      img_filt[cur_row][cur_col] = MultiplyOnePixelEl(input_img.height,input_img.width,
                                                       cur_row,cur_col,
                                                       img_orig, filt);
     }
