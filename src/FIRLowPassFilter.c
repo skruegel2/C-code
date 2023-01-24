@@ -5,36 +5,22 @@
 #include "randlib.h"
 #include "typeutil.h"
 
-#define FILTER_LENGTH 9
-#define HALF_FILT 4
+#define FILTER_LENGTH 5
+#define HALF_FILT 2
 
 void error(char *name);
 
-// Step through all rows and convolve
-void ConvolveHoriz(int width, int height, int filt_len,
-                      double** source_img, double* filt_array, double** dest_img);
-
-// Step through all cols and convolve
-void ConvolveVert(int width, int height, int filt_len,
-                  double** source_img, double* filt_array, double** dest_img);
-
-void ConvolveRow(int source_len, int filt_len,
-                 double* source_row, double* filt_array, double* dest_row);
-
-void ConvolveCol(int source_len, int filt_len,
-                 double* source_col, double* filt_array, double* dest_col);
-
-void ProcessSingleColor(int color, struct TIFF_img input_img, struct TIFF_img color_img, double** filt);
+void ProcessSingleColor(int color, struct TIFF_img input_img, struct TIFF_img color_img, double** filt, double lambda);
 
 // Multiply one pixel element by filter
 double MultiplyOnePixelEl(int source_height, int source_width,
                          int src_cur_row, int src_cur_col,
-                         double** source_img, double** filt);
+                         double** source_img, double** filt, double lambda);
 
 // Multiply pixel by one filter element, considering boundaries.
 double MultiplyOneFilterEl(int source_height, int source_width,
                          int src_cur_row, int src_cur_col, int filt_cur_row,
-                         int filt_cur_col, double** source_img, double** filt);
+                         int filt_cur_col, double** source_img, double** filt, double lambda);
 
 // Init filter
 void InitFilter(double** filt)
@@ -43,7 +29,7 @@ void InitFilter(double** filt)
   {
     for(int cur_col = 0; cur_col < FILTER_LENGTH; cur_col++)
     {
-      filt[cur_row][cur_col] = 1.0/81.0;
+      filt[cur_row][cur_col] = 1.0/25.0;
     }
   }
 }
@@ -81,7 +67,7 @@ int main (int argc, char **argv)
 //    }
 //  }
 
-  if ( argc != 2 ) error( argv[0] );
+  if ( argc != 3 ) error( argv[0] );
 
   /* open image file */
   if ( ( fp_input = fopen ( argv[1], "rb" ) ) == NULL ) {
@@ -100,14 +86,17 @@ int main (int argc, char **argv)
   get_TIFF ( &color_img, input_img.height,
             input_img.width, 'c' );
 
+  float lambda;
+
+  sscanf(argv[2], "%3f", &lambda);
   // Process red, green, blue
   for(int color = 0; color < 3; color++)
   {
-    ProcessSingleColor(color, input_img, color_img, filt);
+    ProcessSingleColor(color, input_img, color_img, filt, lambda);
   }
 
-  if ( ( fp_color = fopen ( "Prob3Filt.tif", "wb" ) ) == NULL ) {
-    fprintf ( stderr, "cannot open file Prob3Filt.tif\n");
+  if ( ( fp_color = fopen ( "Prob4Filt.tif", "wb" ) ) == NULL ) {
+    fprintf ( stderr, "cannot open file Prob4Filt.tif\n");
     exit ( 1 );
   }
 
@@ -129,7 +118,7 @@ int main (int argc, char **argv)
 // Multiply pixel by one filter element, considering boundaries.
 double MultiplyOneFilterEl(int source_height, int source_width,
                          int src_cur_row, int src_cur_col, int filt_cur_row,
-                         int filt_cur_col, double** source_img, double** filt)
+                         int filt_cur_col, double** source_img, double** filt, double lambda)
 {
   double ret_val;
   // Check for out of bounds to the left
@@ -162,7 +151,7 @@ double MultiplyOneFilterEl(int source_height, int source_width,
 // Multiply one pixel element by filter
 double MultiplyOnePixelEl(int source_height, int source_width,
                          int src_cur_row, int src_cur_col,
-                         double** source_img, double** filt)
+                         double** source_img, double** filt, double lambda)
 {
   double ret_val = 0;   // Init before accumulating
   for(int filt_row = -HALF_FILT; filt_row <= HALF_FILT; filt_row++)
@@ -170,9 +159,13 @@ double MultiplyOnePixelEl(int source_height, int source_width,
     for (int filt_col = -HALF_FILT; filt_col <= HALF_FILT; filt_col++)
     {
       ret_val += MultiplyOneFilterEl(source_height,source_width,src_cur_row, src_cur_col,
-                                    filt_row, filt_col, source_img, filt);
+                                    filt_row, filt_col, source_img, filt, lambda);
     }
   }
+  ret_val *= -1;
+  ret_val += source_img[src_cur_row][src_cur_col];
+  ret_val *= lambda;
+  ret_val += source_img[src_cur_row][src_cur_col];
 
   return ret_val;
 }
@@ -190,7 +183,7 @@ void error(char *name)
 }
 
 
-void ProcessSingleColor(int color, struct TIFF_img input_img, struct TIFF_img color_img, double** filt)
+void ProcessSingleColor(int color, struct TIFF_img input_img, struct TIFF_img color_img, double** filt, double lambda)
 {
   double **img_orig;
   double **img_filt;
@@ -219,13 +212,9 @@ void ProcessSingleColor(int color, struct TIFF_img input_img, struct TIFF_img co
   {
     for ( cur_col = 0; cur_col < input_img.width; cur_col++ )
     {
-      test_val = MultiplyOnePixelEl(input_img.height,
-                                                      input_img.width,
-                                                      cur_row,cur_col,
-                                                      img_orig, filt);
       img_filt[cur_row][cur_col] = MultiplyOnePixelEl(input_img.height,input_img.width,
                                                       cur_row,cur_col,
-                                                      img_orig, filt);
+                                                      img_orig, filt, lambda);
     }
   }
 
