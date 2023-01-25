@@ -40,32 +40,11 @@ int main (int argc, char **argv)
   FILE *fp_color;
   struct TIFF_img input_img;
   struct TIFF_img color_img;
-  double** test_src_img;
   double** filt;
   filt = (double **)get_img(FILTER_LENGTH,
                             FILTER_LENGTH,
                             sizeof(double));
   InitFilter(filt);
-
-//  test_src_img = (double **)get_img(20,
-//                                    20,
-//                                     sizeof(double));
-//  double test_val;
-//  for(int cur_row = 0; cur_row < 20; cur_row++)
-//  {
-//    for(int cur_col = 0; cur_col < 20; cur_col++)
-//    {
-//      test_src_img[cur_row][cur_col] = 1;
-//    }
-//  }
-//
-//  for(int cur_row = 0; cur_row < 20; cur_row++)
-//  {
-//    for(int cur_col = 0; cur_col < 20; cur_col++)
-//    {
-//      test_val = MultiplyOnePixelEl(20,20,cur_row,cur_col,test_src_img,filt);
-//    }
-//  }
 
   if ( argc != 3 ) error( argv[0] );
 
@@ -143,7 +122,7 @@ double MultiplyOneFilterEl(int source_height, int source_width,
   }
   else
   {
-    ret_val = source_img[src_cur_row][src_cur_col]*filt[filt_cur_row+HALF_FILT][filt_cur_col+HALF_FILT];
+    ret_val = source_img[src_cur_row + filt_cur_row][src_cur_col + filt_cur_col]*filt[filt_cur_row+HALF_FILT][filt_cur_col+HALF_FILT];
   }
   return ret_val;
 }
@@ -196,13 +175,11 @@ void ProcessSingleColor(int color, struct TIFF_img input_img, struct TIFF_img co
   img_filt = (double **)get_img(input_img.width,
                                      input_img.height,
                                      sizeof(double));
-  double test_val;
   // Copy all components to respective double array
   for ( cur_row = 0; cur_row < input_img.height; cur_row++ )
   {
     for ( cur_col = 0; cur_col < input_img.width; cur_col++ )
     {
-      test_val = input_img.color[color][cur_row][cur_col];
       img_orig[cur_row][cur_col] = input_img.color[color][cur_row][cur_col];
     }
   }
