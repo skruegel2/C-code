@@ -1,5 +1,6 @@
 
 #include <math.h>
+#include <stdbool.h>
 #include "tiff.h"
 #include "allocate.h"
 #include "randlib.h"
@@ -8,21 +9,9 @@
 #define FILTER_LENGTH 9
 #define HALF_FILT 4
 
+#define TEST_DIM 20
+
 void error(char *name);
-
-// Step through all rows and convolve
-void ConvolveHoriz(int width, int height, int filt_len,
-                      double** source_img, double* filt_array, double** dest_img);
-
-// Step through all cols and convolve
-void ConvolveVert(int width, int height, int filt_len,
-                  double** source_img, double* filt_array, double** dest_img);
-
-void ConvolveRow(int source_len, int filt_len,
-                 double* source_row, double* filt_array, double* dest_row);
-
-void ConvolveCol(int source_len, int filt_len,
-                 double* source_col, double* filt_array, double* dest_col);
 
 void ProcessSingleColor(int color, struct TIFF_img input_img, struct TIFF_img color_img, double** filt);
 
@@ -35,6 +24,7 @@ double MultiplyOnePixelEl(int source_height, int source_width,
 double MultiplyOneFilterEl(int source_height, int source_width,
                          int src_cur_row, int src_cur_col, int filt_cur_row,
                          int filt_cur_col, double** source_img, double** filt);
+
 
 // Init filter
 void InitFilter(double** filt)
@@ -54,33 +44,11 @@ int main (int argc, char **argv)
   FILE *fp_color;
   struct TIFF_img input_img;
   struct TIFF_img color_img;
-  double** test_src_img;
   double** filt;
   filt = (double **)get_img(FILTER_LENGTH,
                             FILTER_LENGTH,
                             sizeof(double));
   InitFilter(filt);
-
-//  test_src_img = (double **)get_img(20,
-//                                    20,
-//                                     sizeof(double));
-//  double test_val;
-//  for(int cur_row = 0; cur_row < 20; cur_row++)
-//  {
-//    for(int cur_col = 0; cur_col < 20; cur_col++)
-//    {
-//      test_src_img[cur_row][cur_col] = 1;
-//    }
-//  }
-//
-//  for(int cur_row = 0; cur_row < 20; cur_row++)
-//  {
-//    for(int cur_col = 0; cur_col < 20; cur_col++)
-//    {
-//      test_val = MultiplyOnePixelEl(20,20,cur_row,cur_col,test_src_img,filt);
-//    }
-//  }
-
   if ( argc != 2 ) error( argv[0] );
 
   /* open image file */
@@ -154,7 +122,8 @@ double MultiplyOneFilterEl(int source_height, int source_width,
   }
   else
   {
-    ret_val = source_img[src_cur_row][src_cur_col]*filt[filt_cur_row+HALF_FILT][filt_cur_col+HALF_FILT];
+    ret_val = source_img[src_cur_row + filt_cur_row][src_cur_col + filt_cur_col]*
+              filt[filt_cur_row+HALF_FILT][filt_cur_col+HALF_FILT];
   }
   return ret_val;
 }
@@ -189,27 +158,23 @@ void error(char *name)
     exit(1);
 }
 
-
 void ProcessSingleColor(int color, struct TIFF_img input_img, struct TIFF_img color_img, double** filt)
 {
   double **img_orig;
   double **img_filt;
   int cur_row, cur_col;
   int32_t pixel;
-
   img_orig = (double **)get_img(input_img.width,
                                      input_img.height,
                                      sizeof(double));
   img_filt = (double **)get_img(input_img.width,
                                      input_img.height,
                                      sizeof(double));
-  double test_val;
   // Copy all components to respective double array
   for ( cur_row = 0; cur_row < input_img.height; cur_row++ )
   {
     for ( cur_col = 0; cur_col < input_img.width; cur_col++ )
     {
-      test_val = input_img.color[color][cur_row][cur_col];
       img_orig[cur_row][cur_col] = input_img.color[color][cur_row][cur_col];
     }
   }
@@ -219,10 +184,6 @@ void ProcessSingleColor(int color, struct TIFF_img input_img, struct TIFF_img co
   {
     for ( cur_col = 0; cur_col < input_img.width; cur_col++ )
     {
-      test_val = MultiplyOnePixelEl(input_img.height,
-                                                      input_img.width,
-                                                      cur_row,cur_col,
-                                                      img_orig, filt);
       img_filt[cur_row][cur_col] = MultiplyOnePixelEl(input_img.height,input_img.width,
                                                       cur_row,cur_col,
                                                       img_orig, filt);
@@ -248,7 +209,6 @@ void ProcessSingleColor(int color, struct TIFF_img input_img, struct TIFF_img co
           }
       }
   }
-
   free_img( (void**)img_orig );
   free_img( (void**)img_filt );
 }

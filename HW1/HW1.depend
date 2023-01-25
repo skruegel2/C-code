@@ -67,8 +67,9 @@
 1673787305 source:c:\git-projects\ee637\c-code\src\tiff.c
 	"tiff.h"
 
-1674041898 source:c:\git-projects\ee637\c-code\src\firlowpassfilter.c
+1674623777 source:c:\git-projects\ee637\c-code\src\firlowpassfilter.c
 	<math.h>
+	<stdbool.h>
 	"tiff.h"
 	"allocate.h"
 	"randlib.h"
