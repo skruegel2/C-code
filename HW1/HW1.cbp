@@ -11,7 +11,7 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="imgblur.tif 1.5" />
+				<Option parameters="img03.tif" />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>
@@ -32,7 +32,7 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
-		<Unit filename="../src/FIRLowPassFilter.c">
+		<Unit filename="../src/IIRFilter.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../src/allocate.c">
