@@ -5,8 +5,8 @@
 #include "randlib.h"
 #include "typeutil.h"
 
-#define FILTER_LENGTH 5
-#define HALF_FILT 2
+#define FILTER_LENGTH 3
+#define HALF_FILT 1
 
 void error(char *name);
 
@@ -38,6 +38,7 @@ int main (int argc, char **argv)
                             FILTER_LENGTH,
                             sizeof(double));
   InitFilter(filt);
+//  CreatePointSpreadFunction(filt, 256, 256);
 
   if ( argc != 2 ) error( argv[0] );
 
@@ -64,8 +65,8 @@ int main (int argc, char **argv)
     ProcessSingleColor(color, input_img, color_img, filt);
   }
 
-  if ( ( fp_color = fopen ( "Prob4Filt.tif", "wb" ) ) == NULL ) {
-    fprintf ( stderr, "cannot open file Prob4Filt.tif\n");
+  if ( ( fp_color = fopen ( "Prob5Filt.tif", "wb" ) ) == NULL ) {
+    fprintf ( stderr, "cannot open file Prob5Filt.tif\n");
     exit ( 1 );
   }
 
@@ -99,6 +100,74 @@ void InitFilter(double** filt)
   filt[2][1] = 0;
   filt[2][2] = 0;
 }
+
+void CreatePointSpreadFunction(double** filt, int src_height, int src_width)
+{
+  FILE *fp_point_spread_file;
+  struct TIFF_img point_spread_img;
+  int cur_row;
+  int cur_col;
+  double** ps;
+  double pixel;
+  ps = (double **)get_img(src_width,
+                          src_height,
+                          sizeof(double));
+
+  get_TIFF ( &point_spread_img, src_height,
+            src_width, 'c' );
+
+  ps[127][127] = 1;
+
+    // Step through rows and columns applying filter
+  for ( cur_row = 0; cur_row < src_height; cur_row++ )
+  {
+    for ( cur_col = 0; cur_col < src_width; cur_col++ )
+    {
+      ps[cur_row][cur_col] = MultiplyOnePixelEl(src_height,src_width,
+                                                      cur_row,cur_col,
+                                                      ps, filt);
+    }
+  }
+
+  for(int color = 0; color < 3; color++)
+  {
+    for ( cur_row = 0; cur_row < src_height; cur_row++ )
+    {
+      for ( cur_col = 0; cur_col < src_width; cur_col++ )
+      {
+        pixel = (int32_t) 100*ps[cur_row][cur_col];
+        if (pixel > 255)
+        {
+          point_spread_img.color[color][cur_row][cur_col] = 255;
+        }
+        else if (pixel < 0)
+        {
+          point_spread_img.color[color][cur_row][cur_col] = 0;
+        }
+        else
+        {
+          point_spread_img.color[color][cur_row][cur_col] = pixel;
+        }
+      }
+    }
+  }
+  if ( ( fp_point_spread_file = fopen ( "PP.tif", "wb" ) ) == NULL ) {
+    fprintf ( stderr, "cannot open file PS.tif\n");
+    exit ( 1 );
+  }
+
+  // Write color image
+  if ( write_TIFF ( fp_point_spread_file, &point_spread_img ) ) {
+    fprintf ( stderr, "error writing TIFF file\n");
+    exit ( 1 );
+  }
+
+  // Close color image file
+  fclose ( fp_point_spread_file );
+
+  free_img( (void**)ps );
+}
+
 // Multiply pixel by one filter element, considering boundaries.
 double MultiplyOneFilterEl(int source_height, int source_width,
                          int src_cur_row, int src_cur_col, int filt_cur_row,
@@ -189,7 +258,7 @@ void ProcessSingleColor(int color, struct TIFF_img input_img, struct TIFF_img co
   {
     for ( cur_col = 0; cur_col < input_img.width; cur_col++ )
     {
-      img_filt[cur_row][cur_col] = MultiplyOnePixelEl(input_img.height,input_img.width,
+      img_orig[cur_row][cur_col] = MultiplyOnePixelEl(input_img.height,input_img.width,
                                                       cur_row,cur_col,
                                                       img_orig, filt);
     }
@@ -199,7 +268,7 @@ void ProcessSingleColor(int color, struct TIFF_img input_img, struct TIFF_img co
   {
       for ( cur_col = 0; cur_col < input_img.width; cur_col++ )
       {
-          pixel = (int32_t) img_filt[cur_row][cur_col];
+          pixel = (int32_t) img_orig[cur_row][cur_col];
           if (pixel > 255)
           {
               color_img.color[color][cur_row][cur_col] = 255;
